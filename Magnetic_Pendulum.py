@@ -12,18 +12,14 @@ top=sphere(pos=vector(0,0,0), radius=0.01)
 chooser = box(pos = vector(2.2 * small_size,1.2 * small_size, 0), size = vector(2 * small_size, 2 * small_size, 0.1), color = color.green)
 color_indicator = box(pos = vector(0.8 * small_size, 1.2 * small_size, 0), size = vector(1, 1, 0.1), color = color.blue)
 
-theta=30*pi/180
+theta = None
 
 wall = box(pos = vector(0,-1 * (L + 0.5), 0), size = vector(2 * large_size, 0.1, 2 * large_size), color = color.green)
 balls = []
-balls.append(sphere(pos=L*vector(sin(theta), -cos(theta),0.05), radius=0.3, color=color.cyan))
-balls[0].p = vector(0,0,0)
-balls[0].m = .05
 springs = []
-springs.append(cylinder(pos=top.pos, axis=(balls[0].pos-top.pos), radius=0.05))
 
-g_force = 9.8 * balls[0].m
-g =vector(0,-1 * g_force,0)
+g_force = None
+g = None
 
 max_factor = 3
 factor = 0.2
@@ -34,16 +30,18 @@ dt=0.001
 start_y = 1.4 * small_size
 x_c = -2 * small_size
 mag_force_text = label(pos = vector(x_c,start_y, 0), height = 12)
-mag_force_text.text = "Net Magnetic force (in terms of g's): "
+mag_force_text.text = "Choose starting angle: "
 width = 4 * small_size
 mag_line = box(pos = vector(x_c, start_y - 0.3 * large_size, 0), size = vector(width, 0.2 , 0.1 ), color = color.white)
-mag_indicator = box(pos = vector(x_c + (factor - 0.5) * width, start_y - 0.3 * large_size, 0), size = vector (0.4, 1.0, 0.1), color = color.blue)
+mag_indicator = box(pos = vector(x_c, start_y - 0.3 * large_size, 0), size = vector (0.4, 1.0, 0.1), color = color.blue) #x_c + (factor - 0.5) * width
 start_x = -0.5 * width
 end_x = 0.5 * width
+indicators = []
 while(start_x <= end_x):
-  number = round(max_factor * (start_x/(width) + 0.5),1)
+  number = int(180 * start_x/width)
   text_indicator = label(pos = vector(x_c + start_x, start_y - 0.5 * large_size, 0), height = 8)
   text_indicator.text = str(number)
+  indicators.append(text_indicator)
   start_x += 0.1 * width
   
 magnets = [ ]
@@ -90,10 +88,35 @@ def adjust_factor(position):
     press_indicator.text = "Set factor to " + str(factor)
     mag_indicator.pos.x = position.x
 
+def set_starting_angle(position):
+  global theta, mag_force_text, mag_indicator, g_force, g
+  x_coord = position.x - x_c
+  if(abs(x_coord) < width/2):
+    theta = round(180 * x_coord/width, 3)
+    theta *= pi/180
+    print("Set starting_angle to " + str(theta))
+    balls.append(sphere(pos=L * vector(sin(theta), -cos(theta),0.05), radius=0.3, color=color.cyan))
+    balls[0].p = vector(0,0,0)
+    balls[0].m = .05
+    g_force = 9.8 * balls[0].m
+    g = vector(0,-1 * g_force,0)
+    springs.append(cylinder(pos=top.pos, axis=(balls[0].pos-top.pos), radius=0.05))
+    mag_force_text.text = "Magnetic force constant: "
+    ratio = (factor - max_factor/2)/max_factor
+    mag_indicator.pos.x = x_c + ratio * width
+    print(mag_indicator.pos.x)
+    for indicator in indicators:
+      number = int(indicator.text)
+      number += 90
+      number = round( number * max_factor/180, 1)
+      indicator.text = str(number)
+
 def mousePress(evt):
   position = evt.pos
-  press_indicator.text = str(position)
-  if(position.x < 1.0):
+  if(theta == None):
+    set_starting_angle(position)
+    return None
+  if(position.x < 1.0 and position.y > 0.5 and position.y < 1.5 * small_size):
     adjust_factor(position)
     return None
   delta_x = (position.x - chooser.pos.x)/small_size

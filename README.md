@@ -1,2 +1,2 @@
 # Magnetic_Pendulum
- A magnetic pendulum simulator using VPython 
+ A magnetic pendulum simulator using VPython
