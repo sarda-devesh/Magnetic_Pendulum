@@ -78,7 +78,7 @@ traitlets==4.3.3
 twilio==6.38.0
 txaio==20.4.1
 typing-extensions==3.7.4.2
-urllib3==1.25.8
+urllib3==1.26.5
 virtualenv==20.0.16
 vpython==7.6.1
 wcwidth==0.1.9
